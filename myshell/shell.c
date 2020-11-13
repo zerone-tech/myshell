@@ -14,59 +14,59 @@
 #define MAX 1024
 #define MAX_COMM 100
 
-// È«¾ÖÉùÃ÷
+// å…¨å±€å£°æ˜
 void print_prompt();
 void sig_handle(int sig);
-char cwd[MAX];  //±£´æµ±Ç°Â·¾¶
-char *cmd[MAX]; //cmd ÓÃÀ´±£´æÃüÁîĞĞ×Ö·û´®
+char cwd[MAX];  //ä¿å­˜å½“å‰è·¯å¾„
+char *cmd[MAX]; //cmd ç”¨æ¥ä¿å­˜å‘½ä»¤è¡Œå­—ç¬¦ä¸²
 char PATH[MAX];
 int current_out = 4;
 int current_in = 5;
 int fd[4];
 
-/* ÓÃÓÚÊä³öÌáÊ¾·û */
+/* ç”¨äºè¾“å‡ºæç¤ºç¬¦ */
 void print_prompt()
 {
-    // µ÷ÓÃuname»ñÈ¡ÏµÍ³ĞÅÏ¢
+    // è°ƒç”¨unameè·å–ç³»ç»Ÿä¿¡æ¯
     struct utsname uname_ptr;
 	struct passwd *pid_to_name;
     uname(&uname_ptr);
 	pid_to_name = getpwuid(getuid());
-    //µ÷ÓÃ getcwd »ñÈ¡µ±Ç°Â·¾¶Ãû£¬²¢´æ´¢ÔÚ cwd Ö¸ÏòµÄ×Ö·û´®
+    //è°ƒç”¨ getcwd è·å–å½“å‰è·¯å¾„åï¼Œå¹¶å­˜å‚¨åœ¨ cwd æŒ‡å‘çš„å­—ç¬¦ä¸²
     getcwd(cwd, sizeof(cwd));
-    setbuf(stdout, NULL);       //½ûÓÃ buffer£¬ Ö±½Ó½« printf ÒªÊä³öµÄÄÚÈİÊä³ö
+    setbuf(stdout, NULL);       //ç¦ç”¨ bufferï¼Œ ç›´æ¥å°† printf è¦è¾“å‡ºçš„å†…å®¹è¾“å‡º
     printf("$%s@%s:%s$> ",pid_to_name->pw_name,uname_ptr.sysname, cwd);
 }
 
-/* É¨ÃèÓÃ»§ÊäÈëµÄÃüÁîĞĞ */
+/* æ‰«æç”¨æˆ·è¾“å…¥çš„å‘½ä»¤è¡Œ */
 void scan_cmd(char *command)
 {
     int bytes_read;
     size_t nbytes = MAX;
-    bytes_read = getline(&command, &nbytes, stdin); /*´Ó±ê×¼ÊäÈëÖĞ¶ÁÈë°üº¬
-                                                    ¶àÌõÃüÁîĞĞÓï¾äµÄ×Ö·û´®£¬²¢±£´æÔÚ command±äÁ¿ÖĞ */
+    bytes_read = getline(&command, &nbytes, stdin); /*ä»æ ‡å‡†è¾“å…¥ä¸­è¯»å…¥åŒ…å«
+                                                    å¤šæ¡å‘½ä»¤è¡Œè¯­å¥çš„å­—ç¬¦ä¸²ï¼Œå¹¶ä¿å­˜åœ¨ commandå˜é‡ä¸­ */
     bytes_read -= 1;
     command[bytes_read] = '\0';
 }
 
-/* ÒÔ¿Õ¸ñÎª·Ö½âÃüÁî¼°Æä²ÎÊı */
+/* ä»¥ç©ºæ ¼ä¸ºåˆ†è§£å‘½ä»¤åŠå…¶å‚æ•° */
 void *parse(char *command, int time)
 {
-    char *comm;   // ÓÃÓÚ´¢´æÃüÁî»òÃüÁîµÄ²ÎÊı
+    char *comm;   // ç”¨äºå‚¨å­˜å‘½ä»¤æˆ–å‘½ä»¤çš„å‚æ•°
     if(time ==0)
         comm = strtok(command, " ");
     else
         comm = strtok(NULL, " ");
     return comm;
 }
-/* ·Ö¸îÓÃ»§ÒÔ·ÖºÅ·Ö¸ôµÄ¶àÃüÁî£¬Èç¡°ls;cd¡±*/
+/* åˆ†å‰²ç”¨æˆ·ä»¥åˆ†å·åˆ†éš”çš„å¤šå‘½ä»¤ï¼Œå¦‚â€œls;cdâ€*/
 void parse_semicolon(char *command)
 {
     int i ;
     for (i=0; i < MAX; i++)
         cmd[i] = (char *) malloc(MAX_COMM * sizeof(char));
     i = 0;
-    cmd[i] = strtok(command, ";"); //×¢Òâ strtok µÄÓÃ·¨£¬ÓÃÀ´·Ö¸îÃüÁîĞĞ
+    cmd[i] = strtok(command, ";"); //æ³¨æ„ strtok çš„ç”¨æ³•ï¼Œç”¨æ¥åˆ†å‰²å‘½ä»¤è¡Œ
     while(1)
     {
         i += 1;
@@ -103,7 +103,7 @@ void do_help()
 	printf("Commands list:\n");
 	printf("cat\t\tcd\t\tcp\ndate\t\tls\t\tmkdir\nmv\t\tpwd\t\trm\nrmdir\t\ttouch\t\twhoami\n");
 }\
-/* ´´½¨×Ó½ø³Ì£¬µ÷ÓÃ execvp º¯ÊıÖ´ĞĞÃüÁî³ÌĞò*/
+/* åˆ›å»ºå­è¿›ç¨‹ï¼Œè°ƒç”¨ execvp å‡½æ•°æ‰§è¡Œå‘½ä»¤ç¨‹åº*/
 void bf_exec(char *arg[])
 {
     pid_t pid;
@@ -113,51 +113,51 @@ void bf_exec(char *arg[])
         printf("*** ERROR: forking child process failed\n");
         return ;
     }
-    // ¸¸×Ó½ø³ÌÖ´ĞĞ´úÂëµÄ·ÖÀë
-    else if(pid == 0)    //×Ó½ø³Ì
+    // çˆ¶å­è¿›ç¨‹æ‰§è¡Œä»£ç çš„åˆ†ç¦»
+    else if(pid == 0)    //å­è¿›ç¨‹
     {
         char cmd_dir[MAX];
         strcpy(cmd_dir, PATH);
         strcat(cmd_dir, arg[0]);
         signal(SIGTSTP, SIG_IGN);
-        signal(SIGINT,SIG_DFL);//ÓÃÓÚÉ±ËÀ×Ó½ø³Ì
+        signal(SIGINT,SIG_DFL);//ç”¨äºæ€æ­»å­è¿›ç¨‹
         signal(SIGQUIT, SIG_IGN);
-        execvp(cmd_dir, arg);  // execvp ÓÃÓÚÔÚ×Ó½ø³ÌÖĞÌæ»»ÎªÁíÒ»¶Î³ÌĞò
+        execvp(cmd_dir, arg);  // execvp ç”¨äºåœ¨å­è¿›ç¨‹ä¸­æ›¿æ¢ä¸ºå¦ä¸€æ®µç¨‹åº
     }
-    else     //¸¸½ø³Ì
+    else     //çˆ¶è¿›ç¨‹
     {
-        signal(SIGINT, sig_handle); // SIGINT = 2£¬ ÓÃ»§¼üÈëCtrl-C
-        signal(SIGQUIT, sig_handle); /* SIGQUIT = 3 ÓÃ»§¼üÈëCtr+\ */
-        signal(SIGTSTP, sig_handle);  // SIGTSTP =20£¬Ò»°ãÓĞCtrl-Z²úÉú
+        signal(SIGINT, sig_handle); // SIGINT = 2ï¼Œ ç”¨æˆ·é”®å…¥Ctrl-C
+        signal(SIGQUIT, sig_handle); /* SIGQUIT = 3 ç”¨æˆ·é”®å…¥Ctr+\ */
+        signal(SIGTSTP, sig_handle);  // SIGTSTP =20ï¼Œä¸€èˆ¬æœ‰Ctrl-Zäº§ç”Ÿ
         pid_t c;
-        c = wait(&pid);  //µÈ´ı×Ó½ø³Ì½áÊø
-        dup2(current_out, 1); //»¹Ô­Ä¬ÈÏµÄ±ê×¼Êä³ö
-        dup2(current_in, 0); //»¹Ô­Ä¬ÈÏµÄ±ê×¼ÊäÈë
+        c = wait(&pid);  //ç­‰å¾…å­è¿›ç¨‹ç»“æŸ
+        dup2(current_out, 1); //è¿˜åŸé»˜è®¤çš„æ ‡å‡†è¾“å‡º
+        dup2(current_in, 0); //è¿˜åŸé»˜è®¤çš„æ ‡å‡†è¾“å…¥
         return;
     }
 
 }
 
-/* Ö´ĞĞµ¥ÌõÃüÁîĞĞÓï¾ä */
+/* æ‰§è¡Œå•æ¡å‘½ä»¤è¡Œè¯­å¥ */
 void execute(char *command)
 {
     char *arg[MAX_COMM];
     char *try;
-    arg[0] = parse(command, 0);        //»ñµÃÃüÁîÃû³ÆµÄ×Ö·û´®Ö¸Õë£¬Èç¡°ls¡±
+    arg[0] = parse(command, 0);        //è·å¾—å‘½ä»¤åç§°çš„å­—ç¬¦ä¸²æŒ‡é’ˆï¼Œå¦‚â€œlsâ€
     int t = 1;
     arg[t] = NULL;
-	if (strcmp(arg[0], "exit") == 0) // ÎªÁË·½±ãÓÃ»§ÍË³öshell
+	if (strcmp(arg[0], "exit") == 0) // ä¸ºäº†æ–¹ä¾¿ç”¨æˆ·é€€å‡ºshell
 	{
 		puts("exited!");
 		exit(0);
 	}
-    if (strcmp(arg[0], "cd") == 0)     // ´¦ÀíÄÚÇ¶ÃüÁî¡°cd¡±µÄÇé¿ö
+    if (strcmp(arg[0], "cd") == 0)     // å¤„ç†å†…åµŒå‘½ä»¤â€œcdâ€çš„æƒ…å†µ
     {
         try = parse(command, 1);
         do_cd(try);
         return ;
     }
-    if (strcmp(arg[0], "help") == 0)     // ´¦ÀíÄÚÇ¶ÃüÁî¡°cd¡±µÄÇé¿ö
+    if (strcmp(arg[0], "help") == 0)     // å¤„ç†å†…åµŒå‘½ä»¤â€œhelpâ€çš„æƒ…å†µ
     {
         do_help();
         return ;
@@ -168,7 +168,7 @@ void execute(char *command)
         try = parse(command, 1);
         if (try == NULL)
             break;
-        else       //tryÊÇÒ»¸öÃüÁî²ÎÊı
+        else       //tryæ˜¯ä¸€ä¸ªå‘½ä»¤å‚æ•°
         {
             arg[t] = try;
             t += 1;
@@ -176,11 +176,11 @@ void execute(char *command)
         }
     }
 
-    bf_exec(arg);     // ²ÎÊı 0 ±íÊ¾Ç°Ì¨ÔËĞĞ
+    bf_exec(arg);    
     return;
 }
 
-/* ĞÅºÅ´¦Àíº¯Êı */
+/* ä¿¡å·å¤„ç†å‡½æ•° */
 void sig_handle(int sig)
 {
     if(sig == SIGINT) // SIGINT = 2
@@ -200,13 +200,13 @@ void sig_handle(int sig)
 	}
 }
 void signal_set(){
-	     /* ²¶×½ĞÅºÅ£¬µ±ĞÅºÅ·¢ÉúÊ±µ÷ÓÃĞÅºÅ´¦Àíº¯Êısig_handle£¬½¨ÒéÓÃsigaction¸ÄĞ´ */
-        signal(SIGINT, sig_handle); // SIGINT = 2£¬ ÓÃ»§¼üÈëCtrl-C
-        signal(SIGQUIT, sig_handle); /* SIGQUIT = 3 ÓÃ»§¼üÈëCtr+\ */
-        signal(SIGTSTP, sig_handle);  // SIGTSTP =20£¬Ò»°ãÓĞCtrl-Z²úÉú
+	     /* æ•æ‰ä¿¡å·ï¼Œå½“ä¿¡å·å‘ç”Ÿæ—¶è°ƒç”¨ä¿¡å·å¤„ç†å‡½æ•°sig_handleï¼Œå»ºè®®ç”¨sigactionæ”¹å†™ */
+        signal(SIGINT, sig_handle); // SIGINT = 2ï¼Œ ç”¨æˆ·é”®å…¥Ctrl-C
+        signal(SIGQUIT, sig_handle); /* SIGQUIT = 3 ç”¨æˆ·é”®å…¥Ctr+\ */
+        signal(SIGTSTP, sig_handle);  // SIGTSTP =20ï¼Œä¸€èˆ¬æœ‰Ctrl-Zäº§ç”Ÿ
 		return;
 }
-/* Ö÷º¯ÊıÈë¿Ú */
+/* ä¸»å‡½æ•°å…¥å£ */
 int main()
 {
     getcwd(cwd, sizeof(cwd));
@@ -214,28 +214,28 @@ int main()
     strcat(PATH, "/bin/");
     char *command;
     int iter = 0;
-    command = (char *)malloc(MAX+1); //ÓÃÓÚ´æ´¢ÃüÁîÓï¾ä
+    command = (char *)malloc(MAX+1); //ç”¨äºå­˜å‚¨å‘½ä»¤è¯­å¥
 
-    chdir("/home/");  /* Í¨³£ÔÚµÇÂ½ shell µÄÊ±ºòÍ¨¹ı²éÕÒÅäÖÃÎÄ¼ş£¨/etc/passwd ÎÄ¼ş£©
-                               ÖĞµÄÆğÊ¼Ä¿Â¼£¬³õÊ¼»¯¹¤×÷Ä¿Â¼£¬ÕâÀïÄ¬ÈÏÎª¼ÒÄ¿Â¼ */
+    chdir("/home/");  /* é€šå¸¸åœ¨ç™»é™† shell çš„æ—¶å€™é€šè¿‡æŸ¥æ‰¾é…ç½®æ–‡ä»¶ï¼ˆ/etc/passwd æ–‡ä»¶ï¼‰
+                               ä¸­çš„èµ·å§‹ç›®å½•ï¼Œåˆå§‹åŒ–å·¥ä½œç›®å½•ï¼Œè¿™é‡Œé»˜è®¤ä¸ºå®¶ç›®å½• */
     while(1)
     {
         iter = 0;
-		//¶¨ÒåĞÅºÅ´¦Àí·½Ê½
+		//å®šä¹‰ä¿¡å·å¤„ç†æ–¹å¼
 		signal_set();
-        //ÓÃÓÚÊä³öÌáÊ¾·û
+        //ç”¨äºè¾“å‡ºæç¤ºç¬¦
         print_prompt();
 
-        //É¨Ãè¶àÌõÃüÁîÓï¾ä
+        //æ‰«æå¤šæ¡å‘½ä»¤è¯­å¥
         scan_cmd(command);
 
-        // »ùÓÚ·ÖºÅ½âÎö³öµ¥ÌõÃüÁîÓï¾ä£¬²¢ÒÔ×Ö·û´®µÄĞÎÊ½´æ½øÈ«¾Ö±äÁ¿ cmd ÖĞ
+        // åŸºäºåˆ†å·è§£æå‡ºå•æ¡å‘½ä»¤è¯­å¥ï¼Œå¹¶ä»¥å­—ç¬¦ä¸²çš„å½¢å¼å­˜è¿›å…¨å±€å˜é‡ cmd ä¸­
         parse_semicolon(command);
 
-        // µü´úÖ´ĞĞµ¥ÌõÃüÁîÓï¾ä
+        // è¿­ä»£æ‰§è¡Œå•æ¡å‘½ä»¤è¯­å¥
         while(cmd[iter] != NULL)
         {
-            execute(cmd[iter]); //ÕâÊÇ shell ½âÊÍÆ÷µÄºËĞÄº¯Êı
+            execute(cmd[iter]); //è¿™æ˜¯ shell è§£é‡Šå™¨çš„æ ¸å¿ƒå‡½æ•°
             iter += 1;
         }
     }
